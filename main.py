@@ -4,34 +4,34 @@ import time
 import os
 
 from dotenv import load_dotenv
-load_dotenv()
-
-bot = telegram.Bot(token=os.getenv('TG_BOT_TOKEN'))
+from textwrap import dedent
 
 
 def main():
-    token = os.getenv('DEVMAN_TOKEN')
-    headers = {'Authorization': token}
+    load_dotenv()
+    bot = telegram.Bot(token=os.getenv('TG_BOT_TOKEN'))
+    headers = {'Authorization': os.getenv('DEVMAN_TOKEN')}
     connection_attempts = 0
     while True:
         try:
-            response = requests.get('https://dvmn.org/api/long_polling', headers=headers)
-            response.raise_for_status()
-            timestamp = response.json()['timestamp_to_request']
-            params = {'timestamp': timestamp}
+            params = {'timestamp':time.time()}
             response = requests.get('https://dvmn.org/api/long_polling', headers=headers,
                                                          params=params, timeout=60)
             response.raise_for_status()
             lesson_info = response.json()['new_attempts'][0]
             if lesson_info['is_negative']:
-                message_text = f"Один из твоих уроков '{lesson_info['lesson_title']}' проверен." \
-                               f" \n\nУрок не принят, потому что ты косяк.\nЖми на ссылку" \
-                               f" {lesson_info['lesson_url']} и исправляй"
+                message_text = dedent("""
+                Один из твоих уроков '{}' проверен.
+                Урок не принят, потому что ты косяк.
+                Жми на ссылку - {} и исправляй.
+                """.format(lesson_info['lesson_title'], lesson_info['lesson_url']))
             else:
-                message_text = f"Один из твоих уроков '{lesson_info['lesson_title']}' проверен." \
-                               f"\n\nНаконец-то они оценили твою гениальность.\nЖми на ссылку" \
-                               f" {lesson_info['lesson_url']}."
-            bot.send_message(text=message_text, chat_id=os.getenv('MY_ID'))
+                message_text = dedent("""
+                Один из твоих уроков '{}' проверен.
+                Наконец-то они оценили твою гениальность.
+                Жми на ссылку - {}."""
+                .format(lesson_info['lesson_title'], lesson_info['lesson_url']))
+            bot.send_message(text=message_text, chat_id=os.getenv('RECIPIENT_ID'))
         except requests.exceptions.ConnectionError:
             connection_attempts += 1
             if connection_attempts > 5:
@@ -44,7 +44,3 @@ def main():
 
 if __name__=='__main__':
     main()
-
-
-
-
