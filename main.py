@@ -19,12 +19,12 @@ def main():
             response = requests.get('https://dvmn.org/api/long_polling', headers=headers,
                                                          params=params)
             response.raise_for_status()
-            print(response.json())
-            if response.json()['status']=='timeout':
-                timestamp = response.json()['timestamp_to_request']
+            feedback = response.json()
+            if feedback['status']=='timeout':
+                timestamp = feedback['timestamp_to_request']
             else:
-                timestamp = response.json()['last_attempt_timestamp']
-                lesson_info = response.json()['new_attempts'][0]
+                timestamp = feedback['last_attempt_timestamp']
+                lesson_info = feedback['new_attempts'][0]
                 if lesson_info['is_negative']:
                     message_text = dedent("""
                     Один из твоих уроков '{}' проверен.
