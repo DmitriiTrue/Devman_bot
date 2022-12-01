@@ -16,8 +16,8 @@ def main():
     while True:
         try:
             params = {'timestamp':timestamp}
-            response = requests.get('https://dvmn.org/api/long_polling', headers=headers,
-                                                         params=params)
+            response = requests.get('https://dvmn.org/api/long_polling',
+                                    headers=headers, params=params)
             response.raise_for_status()
             feedback = response.json()
             if feedback['status']=='timeout':
@@ -30,14 +30,17 @@ def main():
                     Один из твоих уроков '{}' проверен.
                     Урок не принят, потому что ты косяк.
                     Жми на ссылку - {} и исправляй.
-                    """.format(lesson_info['lesson_title'], lesson_info['lesson_url']))
+                    """.format(lesson_info['lesson_title'],
+                               lesson_info['lesson_url']))
                 else:
                     message_text = dedent("""
                     Один из твоих уроков '{}' проверен.
                     Наконец-то они оценили твою гениальность.
                     Жми на ссылку - {}."""
-                    .format(lesson_info['lesson_title'], lesson_info['lesson_url']))
-                bot.send_message(text=message_text, chat_id=os.getenv('RECIPIENT_ID'))
+                    .format(lesson_info['lesson_title'],
+                            lesson_info['lesson_url']))
+                bot.send_message(text=message_text,
+                                 chat_id=os.getenv('RECIPIENT_ID'))
         except requests.exceptions.ConnectionError:
             connection_attempts += 1
             if connection_attempts > 5:
